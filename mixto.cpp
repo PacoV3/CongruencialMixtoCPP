@@ -1,22 +1,26 @@
 #include <iostream>
-#include <tuple>
+#include <algorithm>
+#include <set>
 #include <cmath>
 #include <chrono>
 
 using namespace std;
 
-struct Variables {
+struct Variables
+{
     int a;
     int c;
     int m;
     int seed;
 };
 
-class VariableGenerator {
-    public:
-    void make_variables(Variables *variables) {
+class VariableGenerator
+{
+public:
+    void make_variables(Variables *variables)
+    {
         // Time
-        auto now = chrono::high_resolution_clock::now();        
+        auto now = chrono::steady_clock::now();
         auto time_val = now.time_since_epoch().count() / 100;
         // Prime values from 12899 to 13337
         int prime_values[] = {
@@ -38,8 +42,7 @@ class VariableGenerator {
             12973, 12979, 12983, 13001, 13003, 13007, 13009, 13033, 13037, 13043,
             13049, 13063, 13093, 13099, 13103, 13109, 13121, 13127, 13147, 13151,
             13159, 13163, 13171, 13177, 13183, 13187, 13217, 13219, 13229, 13241,
-            13249, 13259, 13267, 13291, 13297, 13309, 13313, 13327, 13331, 13337
-        };
+            13249, 13259, 13267, 13291, 13297, 13309, 13313, 13327, 13331, 13337};
         // How to get the index of m
         int index = *(&prime_values + 1) - prime_values;
         // a, c, m, seed variables
@@ -49,30 +52,40 @@ class VariableGenerator {
         int seed = time_val % m;
         *variables = {a, c, m, seed};
     }
-    
-    bool check_full_period(Variables *variables) {
+
+    // Time for 1000: 1975.02 ms
+    bool check_full_period(Variables *variables)
+    {
         int xn1 = (variables->a * variables->seed + variables->c) % variables->m;
-        int xn1s[variables->m] = {xn1};
-        for (int i = 1; i < variables->m - 1; i++) {
+        int xn1s[variables->m - 1] = {xn1};
+        for (int i = 1; i < variables->m - 1; i++)
+        {
             xn1 = (variables->a * xn1 + variables->c) % variables->m;
-            for (int j = 0; j < i; j++) {
-                if (xn1 == xn1s[j])
-                    return false;
-            }
             xn1s[i] = xn1;
+        }
+        sort(xn1s, xn1s + variables->m - 1);
+        for (int i = 0; i < variables->m - 2; i++)
+        {
+            if (xn1s[i] == xn1s[i + 1])
+                return false;
         }
         return true;
     }
 };
 
-int main ()
+int main()
 {
     VariableGenerator var_gen;
     Variables variables = {};
     int times = 1000;
-    for (int i = 0; i < times; i++) {
+    auto start = chrono::steady_clock::now();
+    for (int i = 0; i < times; i++)
+    {
         var_gen.make_variables(&variables);
         var_gen.check_full_period(&variables);
     }
+    auto stop = chrono::steady_clock::now();
+    auto duration = chrono::duration_cast<chrono::nanoseconds>(stop - start).count();
+    cout << "Time for " << times << ": " << duration / 1e6 << " ms" << endl;
     return 0;
 }
