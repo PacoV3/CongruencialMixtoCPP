@@ -1,6 +1,6 @@
 #include <iostream>
 #include <algorithm>
-#include <set>
+#include <bits/stdc++.h>
 #include <cmath>
 #include <chrono>
 
@@ -47,27 +47,53 @@ public:
         int index = *(&prime_values + 1) - prime_values;
         // a, c, m, seed variables
         int a = pow(10, (time_val % 3 + 2)) + 1;
-        int c = ((time_val % 64) * 200) + 21;
+        int c = ((time_val % 5) * 200) + 21;
         int m = prime_values[time_val % index];
         int seed = time_val % m;
         *variables = {a, c, m, seed};
     }
 
-    // Time for 1000: 1975.02 ms
+    /* 
+        g++ -O3 -Wall mixto.cpp -o mixto.out
+        Test values: 1001, 821, 11597, 96
+        int array -> Time for 10000: 5499.59 ms
+        unordered_map -> Time for 10000: 6765.21 ms
+        With generator
+        int array -> Time for 100000: 66882.1 ms
+        unordered_map -> Time for 100000: 49629.4 ms
+    */
+    
+    // int array implementation
+
+    // bool check_full_period(Variables *variables)
+    // {
+    //     int xn1 = (variables->a * variables->seed + variables->c) % variables->m;
+    //     int xn1s[variables->m - 1] = {xn1};
+    //     for (int i = 1; i < variables->m - 1; i++)
+    //     {
+    //         xn1 = (variables->a * xn1 + variables->c) % variables->m;
+    //         xn1s[i] = xn1;
+    //     }
+    //     sort(xn1s, xn1s + variables->m - 1);
+    //     for (int i = 0; i < variables->m - 2; i++)
+    //     {
+    //         if (xn1s[i] == xn1s[i + 1])
+    //             return false;
+    //     }
+    //     return true;
+    // }
+
+    // unordered_map implementation
+
     bool check_full_period(Variables *variables)
     {
         int xn1 = (variables->a * variables->seed + variables->c) % variables->m;
-        int xn1s[variables->m - 1] = {xn1};
+        unordered_map<int, int> xn1s;
+        xn1s[xn1]++;
         for (int i = 1; i < variables->m - 1; i++)
         {
             xn1 = (variables->a * xn1 + variables->c) % variables->m;
-            xn1s[i] = xn1;
-        }
-        sort(xn1s, xn1s + variables->m - 1);
-        for (int i = 0; i < variables->m - 2; i++)
-        {
-            if (xn1s[i] == xn1s[i + 1])
-                return false;
+            if (++xn1s[xn1] != 1) return false;
         }
         return true;
     }
@@ -76,8 +102,11 @@ public:
 int main()
 {
     VariableGenerator var_gen;
+    // 12, 9, 101, 0
+    // 12, 9, 91, 0
+    // 1001, 821, 11597, 96
     Variables variables = {};
-    int times = 1000;
+    int times = 100000;
     auto start = chrono::steady_clock::now();
     for (int i = 0; i < times; i++)
     {
