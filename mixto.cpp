@@ -1,10 +1,8 @@
 #include <iostream>
 #include <algorithm>
-#include <bits/stdc++.h>
 #include <cmath>
+#include <vector>
 #include <chrono>
-
-using namespace std;
 
 struct Variables
 {
@@ -16,11 +14,12 @@ struct Variables
 
 class VariableGenerator
 {
-public:
-    void make_variables(Variables *variables)
+    Variables variables;
+
+    void make_variables()
     {
         // Time
-        auto now = chrono::steady_clock::now();
+        auto now = std::chrono::steady_clock::now();
         auto time_val = now.time_since_epoch().count() / 100;
         // Prime values from 12899 to 13337
         int prime_values[] = {
@@ -50,71 +49,68 @@ public:
         int c = ((time_val % 5) * 200) + 21;
         int m = prime_values[time_val % index];
         int seed = time_val % m;
-        *variables = {a, c, m, seed};
+        variables = {a, c, m, seed};
     }
 
     /* 
-        g++ -O3 -Wall mixto.cpp -o mixto.out
-        Test values: 1001, 821, 11597, 96
-        int array -> Time for 10000: 5499.59 ms
-        unordered_map -> Time for 10000: 6765.21 ms
-        With generator
-        int array -> Time for 100000: 66882.1 ms
-        unordered_map -> Time for 100000: 49629.4 ms
+        Normal compile time
+        Time for 100000: 7933.16 ms
+        Optimized complier time - g++ -O3 -Wall mixto.cpp -o mixto.out
+        Time for 100000: 8.3713 ms
     */
-    
-    // int array implementation
 
-    // bool check_full_period(Variables *variables)
-    // {
-    //     int xn1 = (variables->a * variables->seed + variables->c) % variables->m;
-    //     int xn1s[variables->m - 1] = {xn1};
-    //     for (int i = 1; i < variables->m - 1; i++)
-    //     {
-    //         xn1 = (variables->a * xn1 + variables->c) % variables->m;
-    //         xn1s[i] = xn1;
-    //     }
-    //     sort(xn1s, xn1s + variables->m - 1);
-    //     for (int i = 0; i < variables->m - 2; i++)
-    //     {
-    //         if (xn1s[i] == xn1s[i + 1])
-    //             return false;
-    //     }
-    //     return true;
-    // }
-
-    // unordered_map implementation
-
-    bool check_full_period(Variables *variables)
+    bool check_full_period()
     {
-        int xn1 = (variables->a * variables->seed + variables->c) % variables->m;
-        unordered_map<int, int> xn1s;
+        int xn1 = (variables.a * variables.seed + variables.c) % variables.m;
+        int xn1s[variables.m] = {};
         xn1s[xn1]++;
-        for (int i = 1; i < variables->m - 1; i++)
+        for (int i = 1; i < variables.m - 1; i++)
         {
-            xn1 = (variables->a * xn1 + variables->c) % variables->m;
-            if (++xn1s[xn1] != 1) return false;
+            xn1 = (variables.a * xn1 + variables.c) % variables.m;
+            if (++xn1s[xn1] != 1)
+                return false;
         }
         return true;
+    }
+
+public:
+    // Optimized
+    // Time for 1000000 combinations: 104977 ms
+    // Time for 10000 combinations: 1031.31 ms
+    // Normal
+    // Time for 10000 combinations: 1924.69 ms
+    
+    std::vector<Variables> generate_variables(int n)
+    {
+        std::vector<Variables> v_variables = {};
+        while (v_variables.size() != (std::size_t) n)
+        {
+            make_variables();
+            if (check_full_period())
+                v_variables.push_back(variables);
+        }
+        return v_variables;
+    }
+
+    void test_speed(int times) {
+        for (int i = 0; i < times; i++) {
+            make_variables();
+            check_full_period();
+        }
     }
 };
 
 int main()
 {
     VariableGenerator var_gen;
-    // 12, 9, 101, 0
-    // 12, 9, 91, 0
-    // 1001, 821, 11597, 96
-    Variables variables = {};
-    int times = 100000;
-    auto start = chrono::steady_clock::now();
-    for (int i = 0; i < times; i++)
-    {
-        var_gen.make_variables(&variables);
-        var_gen.check_full_period(&variables);
-    }
-    auto stop = chrono::steady_clock::now();
-    auto duration = chrono::duration_cast<chrono::nanoseconds>(stop - start).count();
-    cout << "Time for " << times << ": " << duration / 1e6 << " ms" << endl;
+    int combinations = 10000;
+    auto start = std::chrono::steady_clock::now();
+    
+    // std::vector<Variables> complete_variables = var_gen.generate_variables(combinations);
+    var_gen.test_speed(100000);
+
+    auto stop = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
+    std::cout << "Time for " << combinations << " combinations: " << duration / 1e6 << " ms" << std::endl;
     return 0;
 }
