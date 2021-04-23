@@ -1,6 +1,6 @@
-# CongruencialMixtoCPP
+# congruential-cpp
 
-CongruencialMixtoCPP is a C++ linear congruential generator that has to verify that every combination of variables is complete and can produce pseudo-randomized numbers.
+congruential-cpp is a C++ linear congruential generator that has to verify that every combination of variables is complete and can produce pseudo-randomized numbers.
 
 ## Implementation
 
