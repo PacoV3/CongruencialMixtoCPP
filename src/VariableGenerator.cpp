@@ -5,13 +5,6 @@
 #include <chrono>
 #include <fstream>
 
-/* 
-    Normal compile time
-    Time for 100000: 7933.16 ms
-    Optimized complier time - g++ -O3 -Wall mixto.cpp -o mixto.out
-    Time for 100000: 8.3713 ms
-*/
-
 Variables make_variables()
 {
     // Time
@@ -44,14 +37,21 @@ Variables make_variables()
     int c = ((time_val % 5) * 200) + 21;
     int m = prime_values[time_val % prime_values_length];
     int seed = time_val % m;
-    Variables vars = {a, c, m, seed}; 
+    Variables vars = {a, c, m, seed};
     return vars;
 }
+
+/* 
+    With normal compile time
+    Time for 100000: 7933.16 ms
+    With optimized complier time - g++ -O3
+    Time for 100000: 8.3713 ms
+*/
 
 bool check_full_period(Variables vars)
 {
     int xn1 = (vars.a * vars.seed + vars.c) % vars.m;
-    int xn1s[vars.m]{};
+    int xn1s[vars.m] = {};
     xn1s[xn1]++;
     for (int i = 1; i < vars.m - 1; i++)
     {
@@ -62,7 +62,7 @@ bool check_full_period(Variables vars)
     return true;
 }
 
-Variables VariableGenerator::get_correct_variable()
+Variables VariableGenerator::get_complete_variables()
 {
     Variables vars = make_variables();
     while (!check_full_period(vars))
@@ -74,9 +74,9 @@ Variables VariableGenerator::get_correct_variable()
 
 void VariableGenerator::test_speed(int times)
 {
-    std::fstream myfile{};
+    std::fstream myfile;
     myfile.open("example.txt");
-    Variables vars = {};
+    Variables vars;
     for (int i = 0; i < times; i++)
     {
         vars = make_variables();

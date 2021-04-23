@@ -3,9 +3,7 @@
 
 class VariableGenerator
 {
-    Variables variables;
-
-    public:
-    Variables get_correct_variable();
+public:
+    Variables get_complete_variables();
     void test_speed(int times);
 };
