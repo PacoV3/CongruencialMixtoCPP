@@ -6,7 +6,7 @@
 int main()
 {
     Test t;
-    int n_vars = 500;
+    int n_vars = 1000;
     int sample_size = 500;
     auto start = std::chrono::steady_clock::now();
 
@@ -15,7 +15,8 @@ int main()
     // {
     //     std::cout << var.a << std::endl;
     // }
-    std::cout << correct_vars.size() << " correct variables." << std::endl;
+    std::cout << "From " << n_vars << " variables we got " <<  correct_vars.size() 
+                << " correct variables." << std::endl;
 
     auto stop = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
