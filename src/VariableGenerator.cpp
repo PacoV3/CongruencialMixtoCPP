@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cmath>
 #include <chrono>
+#include <deque>
 #include <fstream>
 
 Variables make_variables()
@@ -62,7 +63,7 @@ bool check_full_period(Variables vars)
     return true;
 }
 
-Variables VariableGenerator::get_complete_variables()
+Variables VariableGenerator::get_complete_variable()
 {
     Variables vars = make_variables();
     while (!check_full_period(vars))
@@ -72,18 +73,44 @@ Variables VariableGenerator::get_complete_variables()
     return vars;
 }
 
-void VariableGenerator::test_speed(int times)
+std::deque<Variables> VariableGenerator::get_complete_variables(int n_variables)
 {
-    std::fstream myfile;
-    myfile.open("example.txt");
-    Variables vars;
-    for (int i = 0; i < times; i++)
+    std::deque<Variables> var_container{};
+    Variables vars{};
+    for (int i = 0; i < n_variables; i++)
     {
-        vars = make_variables();
-        if (check_full_period(vars))
-        {
-            myfile << "(" << vars.a << ", " << vars.c << ", " << vars.m << ", " << vars.seed << ")" << std::endl;
-        }
+        vars = get_complete_variable();
+        var_container.push_front(vars);
+    }
+    return var_container;
+}
+
+void VariableGenerator::save_variables(std::deque<Variables> nice_vars)
+{
+    std::fstream myfile{};
+    myfile.open("../vars.txt");
+    for (const auto &vars : nice_vars)
+    {
+        myfile << "(" << vars.a << ", " 
+                        << vars.c << ", "
+                        << vars.m << ", " 
+                        << vars.seed << ")" << std::endl;
     }
     myfile.close();
 }
+
+// void VariableGenerator::test_speed(int times)
+// {
+//     std::fstream myfile;
+//     myfile.open("../vars.txt");
+//     Variables vars;
+//     for (int i = 0; i < times; i++)
+//     {
+//         vars = make_variables();
+//         if (check_full_period(vars))
+//         {
+//             myfile << "(" << vars.a << ", " << vars.c << ", " << vars.m << ", " << vars.seed << ")" << std::endl;
+//         }
+//     }
+//     myfile.close();
+// }
